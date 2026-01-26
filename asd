@@ -1,0 +1,21 @@
+[90m= [39m[34;4mApp\Models\Persona[39;24m {#6190
+    [34mid[39m: [35m1[39m,
+    [34mnombre[39m: "[32mhector[39m",
+    [34mprimer_apellido[39m: "[32mLORETO[39m",
+    [34msegundo_apellido[39m: "[32mFIMBRES[39m",
+    [34mcurp[39m: "[32mLOFJ780730HBCRMS03[39m",
+    [34mfecha_nacimiento[39m: "[32m1978-07-30[39m",
+    [34msexo[39m: "[32mH[39m",
+    [34mdomicilio[39m: "[32mdfaf[39m",
+    [34mdomicilio_ciudad[39m: "[32mfdas[39m",
+    [34mdomicilio_estado[39m: "[32mfdasd[39m",
+    [34mclave_elector[39m: "[32mLRFMJS78073002H700[39m",
+    [34manio_emision_ine[39m: "[32m2021[39m",
+    [34mine_cic[39m: "[32mfasd[39m",
+    [34mstatus[39m: "[32maceptado[39m",
+    [34mobservaciones[39m: [36mnull[39m,
+    [34muser_id[39m: [35m2[39m,
+    [34mcreated_at[39m: "[32m2026-01-22 16:56:18[39m",
+    [34mupdated_at[39m: "[32m2026-01-22 20:08:51[39m",
+  }
+
