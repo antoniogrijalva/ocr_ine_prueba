@@ -95,7 +95,7 @@ const submit = () => {
 
         <div class="py-12">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-
+                    --pruebas de lectura de una imagen con cloud vision--
                     <!-- cloud vision google -->
                      <div class="mb-6">
                         <label class="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-indigo-400 rounded-lg cursor-pointer bg-indigo-50 hover:bg-indigo-100 transition">
