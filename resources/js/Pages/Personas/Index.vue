@@ -49,6 +49,9 @@ const enviarExpediente = (id) => {
                 <Link :href="route('personas.create')" class="bg-indigo-600 hover:bg-indigo-300 text-white px-4 py-2 rounded shadow">
                     + Nuevo Registro
                 </Link>
+                 <Link :href="route('personas.create_rc')" class="bg-green-600 hover:bg-green-500 text-white px-4 py-2 rounded shadow">
+                    + Prototipo Registro Candidatos
+                </Link>
             </div>
         </template>
 

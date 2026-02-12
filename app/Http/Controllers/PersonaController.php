@@ -148,6 +148,12 @@ class PersonaController extends Controller
         return Inertia::render('Personas/Create');
     }
 
+    public function create_rc()
+    {
+        //dd('Crear persona');
+        return Inertia::render('Personas/Candidatos_form');
+    }
+
     /**
      * Store a newly created resource in storage.
      */

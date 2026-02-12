@@ -62,6 +62,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/ocr-ine', [OcrController::class, 'procesarIne'])
             ->middleware('throttle:20,1')
             ->name('ocr.ine');
+
+            //JAGA febrero 2026:: solo para prototipo de registro de candidatos (captura)
+            Route::get('/registro-candidatos/crear', [PersonaController::class, 'create_rc'])->name('personas.create_rc');
     });
 
     Route::get('/personas', [PersonaController::class, 'index'])->name('personas.index');
