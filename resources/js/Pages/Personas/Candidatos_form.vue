@@ -10,6 +10,7 @@ import { Head, useForm , Link} from '@inertiajs/vue3';
     import jaga_component_input from '@/Components/personales/jaga_component_input.vue';
     import jaga_component_select from '@/Components/personales/jaga_component_select.vue';
     import jaga_component_h3 from '@/Components/personales/jaga_component_h3.vue';
+    import jaga_component_collapsible from '@/Components/personales/jaga_component_collapsible.vue';
 
 
 
@@ -64,19 +65,16 @@ import { Head, useForm , Link} from '@inertiajs/vue3';
 
                     // Llenado automático de campos principales
                     form.curp = ocr_ine.datos.curp || '';
-                    
                     form.ine_clave_elector = ocr_ine.datos.clave_elector || '';
                     form.ine_cic = ocr_ine.datos.cic || '';
                     form.ine_numero_emision = ocr_ine.datos.numero_emision || '';
                     form.ine_ocr= ocr_ine.datos.ocr || '';
                     form.ine_seccion = ocr_ine.datos.seccion || '';
-
                     form.nombre = ocr_ine.datos.nombre || '';
                     form.primer_apellido = ocr_ine.datos.primer_apellido || '';        
                     form.segundo_apellido = ocr_ine.datos.segundo_apellido || '';
                     form.nacimiento_fecha = ocr_ine.datos.fecha_nacimiento || '';
                     form.sexo = ocr_ine.datos.sexo || '';
-
                     //domicilio
                     form.domicilio_calle = ocr_ine.datos.calle || '';
                     form.domicilio_num_ext = ocr_ine.datos.num_exterior || '';
@@ -85,16 +83,10 @@ import { Head, useForm , Link} from '@inertiajs/vue3';
                     form.domicilio_cp = ocr_ine.datos.codigo_postal || '';  
                     form.domicilio_municipio = ocr_ine.datos.municipio || '';
                     form.domicilio_localidad = ocr_ine.datos.municipio || '';
-
                     //para observar el domicilio completo
                     form.notificaciones_domicilio= ocr_ine.datos.domicilio_completo || '';
-
                     form.domicilio_estado = ocr_ine.datos.estado || '';
-
-                    form.nacimiento_estado = ocr_ine.datos.estado_nacimiento || '';
-
-                    
-
+                    form.nacimiento_estado = ocr_ine.datos.estado_nacimiento || '';                    
 
                 } catch (error) {
                     // Ahora el error será más descriptivo
@@ -260,9 +252,7 @@ const form = useForm({
     /*tiempo de residencia */
     tiempo_residencia_anios: null,
     tiempo_residencia_meses: null,
-   
-
-    
+      
    /* datos credencial INE */ 
     ine_clave_elector: '',
     ine_seccion: '',
@@ -275,10 +265,34 @@ const form = useForm({
     nacimiento_estado: '',
     nacimiento_municipio: '',
 
-
     registro_fecha: null,
 
     idestatus: 1, // 1 = captura, 2 = enviado a revision, 3 = aceptado, 4 = rechazado
+
+
+    /* Datos especiales para mujeres */
+    mujer_tipo_participacion: '', // aspirante, precandidta, candidata
+    mujer_via_postulacion: '', // partido, independiente
+    mujer_calidad: '', // propietaria, suplente
+    mujer_rango_edad: '', // 18-30, 31-40, 41-50, 51-60, mas-60
+    mujer_discapacidad: false,
+    
+    mujer_discapacidad_tipos: {
+        visual: { seleccionada: false, descripcion: '' },
+        comunicacion: { seleccionada: false, descripcion: '' },
+        auditiva: { seleccionada: false, descripcion: '' },
+        intelectual: { seleccionada: false, descripcion: '' },
+        motriz: { seleccionada: false, descripcion: '' },
+        otra: { seleccionada: false, descripcion: '' }
+    },
+
+    mujer_afromexicana: false,
+    mujer_indigena: false,
+    mujer_lengua_indigena: '',
+    mujer_requiere_interprete: false,
+    mujer_tipo_interprete: '',
+    mujer_lgbtttiq: 'prefiero-no-contestar',  // si, no, prefiero-no-contestar
+    mujer_lgbtttiq_especifique: ''
 
 });
 
@@ -456,6 +470,83 @@ const form = useForm({
                 });
      /* seleccionar acciones afirmativas segun lo registrado por el capturista */
 
+
+        // RED DE MUJERES:  para resetear los datos especiales de mujer si cambia el sexo
+        watch(() => form.sexo, (newValue) => {
+            if (newValue !== 'M') {
+                form.mujer_tipo_participacion = '';
+                form.mujer_via_postulacion = '';
+                form.mujer_calidad = '';
+                form.mujer_rango_edad = '';
+                form.mujer_discapacidad = false;
+                
+                form.mujer_discapacidad_tipos = {
+                    visual: { seleccionada: false, descripcion: '' },
+                    comunicacion: { seleccionada: false, descripcion: '' },
+                    auditiva: { seleccionada: false, descripcion: '' },
+                    intelectual: { seleccionada: false, descripcion: '' },
+                    motriz: { seleccionada: false, descripcion: '' },
+                    otra: { seleccionada: false, descripcion: '' }
+                };
+
+                form.mujer_afromexicana = false;
+                form.mujer_indigena = false;
+                form.mujer_lengua_indigena = '';
+                form.mujer_requiere_interprete = false;
+                form.mujer_tipo_interprete = '';
+                form.mujer_lgbtttiq = 'prefiero-no-contestar';
+                form.mujer_lgbtttiq_especifique = '';
+            }
+        });
+
+        // Watch para limpiar tipo de discapacidad si no tiene discapacidad
+        watch(() => form.mujer_discapacidad, (newValue) => {
+            if (!newValue) {
+                form.mujer_discapacidad_tipos = {
+                    visual: { seleccionada: false, descripcion: '' },
+                    comunicacion: { seleccionada: false, descripcion: '' },
+                    auditiva: { seleccionada: false, descripcion: '' },
+                    intelectual: { seleccionada: false, descripcion: '' },
+                    motriz: { seleccionada: false, descripcion: '' },
+                    otra: { seleccionada: false, descripcion: '' }
+                };
+            }
+        });
+
+        // Watch para limpiar descripción si se desmarca un tipo de discapacidad
+        watch(() => form.mujer_discapacidad_tipos, (newValue) => {
+            Object.keys(newValue).forEach(tipo => {
+                if (!newValue[tipo].seleccionada) {
+                    newValue[tipo].descripcion = '';
+                }
+            });
+        }, { deep: true });
+
+        // Watch para limpiar lengua indígena e intérprete si no es indígena
+        watch(() => form.mujer_indigena, (newValue) => {
+            if (!newValue) {
+                form.mujer_lengua_indigena = '';
+                form.mujer_requiere_interprete = false;
+                form.mujer_tipo_interprete = '';
+            }
+        });
+
+        // Watch para limpiar tipo de intérprete si no requiere
+        watch(() => form.mujer_requiere_interprete, (newValue) => {
+            if (!newValue) {
+                form.mujer_tipo_interprete = '';
+            }
+        });
+
+        // Watch para limpiar especificación LGBTTTIQ+ según la respuesta
+        watch(() => form.mujer_lgbtttiq, (newValue) => {
+            if (newValue !== 'si') {
+                form.mujer_lgbtttiq_especifique = '';
+            }
+        });
+        // RED DE MUJERES:  para resetear los datos especiales de mujer si cambia el sexo
+
+
     // const submit = () => {
     //     form.post(route('personas.store'), {
     //         onFinish: () => form.reset('curp', 'clave_elector'),
@@ -470,13 +561,17 @@ const form = useForm({
         <template #header>
             <div class="flex justify-between items-center">
                 <h2 class="font-semibold text-xl text-gray-800 leading-tight">Registro de Candidatos (paso-1)</h2>
-                <Link :href="route('personas.index')" class="bg-indigo-600 hover:bg-indigo-300 text-white px-4 py-2 rounded shadow">
-                    ← Regresar
+
+                <Link :href="route('personas.index')" class="text-sm text-blue-600 hover:text-blue-800">
+                    ← Regresar a la lista
                 </Link>
+
+                
             </div>
+            
         </template>
 
-        <div class="py-12">
+        <div class="py-6">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                
                         <!-- Stepper solo muestra el paso actual  -->
@@ -493,6 +588,45 @@ const form = useForm({
                         <h2 class="text-xl font-semibold text-gray-700">Candidato</h2>
                     </div>
 
+
+                    <!-- pruebas de componente colapsable -->
+                      <!-- Ejemplo 1: Datos Generales (Azul) -->
+                            <jaga_component_collapsible
+                                title="Componente tipo CARD para datos generales"
+                                icon="<i class='fas fa-id-card'></i>"
+                                border-color="border-slate-900"
+                                border-grosor="border-2"
+                                bg-color="bg-yellow-50"
+                                header-bg-color="bg-slate-900"
+                                header-text-color="text-slate-100"
+                                :isOpen="true"
+                            >
+
+                                <!-- PARTIDO, COALICIÓN O CANDIDATO INDEPENDIENTE -->
+                                <div class="mb-4 rounded-lg p-4">
+                                    <jaga_component_h3 text="PARTIDO, COALICIÓN O CANDIDATO INDEPENDIENTE" />
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <jaga_component_select label="Tipo de Actor Político" v-model="form.id_tipo_actor_politico" :options="c_catalogo_tipo_actor_politico" option-value="id_tipo_actor_politico"  required :error="form.errors.id_tipo_actor_politico"/>  
+                                        <jaga_component_select label="Actor Político" v-model="form.id_actor_politico" :options="actoresPoliticosFiltrados" option-value="idpartido"  :disabled="!form.id_tipo_actor_politico || form.id_tipo_actor_politico === 0" required :error="form.errors.id_actor_politico"/>
+                                    </div>
+                                </div>
+
+                                <!-- CARGO PARA EL QUE SE POSTULA -->
+                                <div class="mb-4 rounded-lg p-4">
+                                    <jaga_component_h3 text="CARGO PARA EL QUE SE POSTULA" />
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <jaga_component_select label="Tipo de Elección" v-model="form.id_tipo_eleccion" :options="c_catalogo_tipo_eleccion" option-value="id_tipo_eleccion"  required :error="form.errors.id_tipo_eleccion"/>  
+                                        <jaga_component_select label="Municipio/Distrito" v-model="form.id_municipio_distrito" :options="municipiosDistritosFiltrados" option-value="id_municipio_distrito"  :disabled="!form.id_tipo_eleccion || form.id_tipo_eleccion === 0 || municipiosDistritosFiltrados.length === 0"  :error="form.errors.id_municipio_distrito"/>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                        <jaga_component_select label="Tipo de Cargo" v-model="form.id_tipo_cargo" :options="CargosFiltrados" option-value="id_tipo_cargo"  :disabled="!form.id_tipo_eleccion || form.id_tipo_eleccion === 0 || CargosFiltrados.length === 0" required :error="form.errors.id_tipo_cargo" />
+                                        <jaga_component_select label="No. de Regidor / Diputado" v-model="form.id_numero" :options="opcionesNumero.map(num => ({ id: num, nombre: num }))" option-value="id"  :disabled="opcionesNumero.length === 0"  :error="form.errors.id_numero" />
+                                    </div>
+                                </div>  
+                                                  
+                         </jaga_component_collapsible>
+                    
                     <!-- {{ form }} -->
                     <form @submit.prevent="submit" class="space-y-6">
 
@@ -570,6 +704,369 @@ const form = useForm({
                             </div> 
                       
                         </div>
+
+
+                        <!-- red de mujeres electas  -->
+                        <!-- SECCIÓN ESPECIAL PARA MUJERES -->
+                        <!-- <div v-if="form.sexo === 'M'" class="border-4 border-pink-600 pb-4 _bg-pink-50 p-4 rounded-lg "> -->
+                            <jaga_component_collapsible v-if="form.sexo === 'M'"
+                                title="Registro en la Red de Mujeres Candidatas y Electas"
+                                icon="<i class='fas fa-female'></i>"
+                                border-color="border-pink-600"
+                                _border-grosor="border-2"
+                                _bg-color="bg-yellow-50"
+                                header-bg-color="bg-pink-600"
+                                header-text-color="text-white"
+                                :isOpen="true"
+                            >
+
+                                <!-- <jaga_component_h3 text="♀️ Registro en la Red de Mujeres Candidatas y Electas"  /> -->
+                                
+                                <!-- Tipo de Participación y Vía de Postulación -->
+                                <!-- <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mt-4  bg-pink-100 p-2 rounded-lg shadow-md ">
+                                    <div class="col-span-2 border-r border-pink-300">
+                                        <label class="block text-sm font-medium text-pink-700 mb-1">Soy mujer:</label>
+                                        <div class="space-y-0">
+                                            <label class="inline-flex items-center mr-4">
+                                                <input type="radio" v-model="form.mujer_tipo_participacion" value="aspirante" class="form-radio">
+                                                <span class="ml-2">Aspirante</span>
+                                            </label>
+                                            <label class="inline-flex items-center mr-4">
+                                                <input type="radio" v-model="form.mujer_tipo_participacion" value="precandidta" class="form-radio">
+                                                <span class="ml-2">Pre-candidata</span>
+                                            </label>
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_tipo_participacion" value="candidata" class="form-radio">
+                                                <span class="ml-2">Candidata</span>
+                                            </label>
+                                        </div>
+                                        <div v-if="form.errors.mujer_tipo_participacion" class="text-red-500 text-sm mt-1">
+                                            {{ form.errors.mujer_tipo_participacion }}
+                                        </div>
+                                    </div>
+
+                                    <div class="col-span-2 border-r border-pink-300">
+                                        <label class="block text-sm font-medium text-pink-700 mb-1">Vía de Postulación:</label>
+                                        <div class="space-y-0">
+                                            <label class="inline-flex items-center mr-4">
+                                                <input type="radio" v-model="form.mujer_via_postulacion" value="partido" class="form-radio">
+                                                <span class="ml-2">Por el Partido Político</span>
+                                            </label>
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_via_postulacion" value="independiente" class="form-radio">
+                                                <span class="ml-2">Independiente</span>
+                                            </label>
+                                        </div>
+                                        <div v-if="form.errors.mujer_via_postulacion" class="text-red-500 text-sm mt-1">
+                                            {{ form.errors.mujer_via_postulacion }}
+                                        </div>
+                                    </div>
+
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium text-pink-700 mb-1">Calidad:</label>
+                                        <div class="space-y-0">
+                                            <label class="inline-flex items-center mr-4">
+                                                <input type="radio" v-model="form.mujer_calidad" value="propietaria" class="form-radio">
+                                                <span class="ml-2">Propietaria</span>
+                                            </label>
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_calidad" value="suplente" class="form-radio">
+                                                <span class="ml-2">Suplente</span>
+                                            </label>
+                                        </div>
+                                        <div v-if="form.errors.mujer_calidad" class="text-red-500 text-sm mt-1">
+                                            {{ form.errors.mujer_calidad }}
+                                        </div>
+                                    </div>
+                                </div> -->
+
+                                <!-- Rango de Edad -->
+                                <!-- <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mt-4">
+                                    <div class="col-span-6  bg-pink-100 p-2 rounded-lg shadow-md">
+                                        <label class="block text-sm font-medium text-pink-700 mb-1">Rango de edad:</label>
+                                        <div class="flex flex-wrap gap-4">
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_rango_edad" value="18-30" class="form-radio">
+                                                <span class="ml-2">18 a 30</span>
+                                            </label>
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_rango_edad" value="31-40" class="form-radio">
+                                                <span class="ml-2">31 a 40</span>
+                                            </label>
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_rango_edad" value="41-50" class="form-radio">
+                                                <span class="ml-2">41 a 50</span>
+                                            </label>
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_rango_edad" value="51-60" class="form-radio">
+                                                <span class="ml-2">51 a 60</span>
+                                            </label>
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_rango_edad" value="mas-60" class="form-radio">
+                                                <span class="ml-2">Más de 60</span>
+                                            </label>
+                                        </div>
+                                        <div v-if="form.errors.mujer_rango_edad" class="text-red-500 text-sm mt-1">
+                                            {{ form.errors.mujer_rango_edad }}
+                                        </div>
+                                    </div>
+                                </div> -->
+
+                                <!-- Discapacidad -->
+                                <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mt-1">
+                                    <div class="col-span-6  bg-pink-100 p-2 rounded-lg shadow-md">
+                                        <label class="block text-sm font-medium text-pink-700 mb-1">¿Se encuentra en situación de discapacidad permanente?</label>
+                                        <div class="flex items-center space-x-4 mb-3">
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_discapacidad" :value="true" class="form-radio">
+                                                <span class="ml-2">Sí</span>
+                                            </label>
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_discapacidad" :value="false" class="form-radio">
+                                                <span class="ml-2">No</span>
+                                            </label>
+                                        </div>
+
+                                        <div v-if="form.mujer_discapacidad" class="ml-4 space-y-2">
+                                            <label class="block text-sm font-medium text-gray-600 mb-">Tipo de discapacidad (puede seleccionar varias):</label>
+                                            
+                                            <div class="grid grid-cols-3 gap-2">
+                                                <!-- Visual -->
+                                                <div class="border-l-4 border-pink-300 pl-2 py-2">
+                                                    <label class="inline-flex items-center mb-2">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            v-model="form.mujer_discapacidad_tipos.visual.seleccionada" 
+                                                            class="form-checkbox h-5 w-5 text-pink-600"
+                                                        >
+                                                        <span class="ml-2 font-medium">Visual</span>
+                                                    </label>
+                                                    <jaga_component_input 
+                                                        v-if="form.mujer_discapacidad_tipos.visual.seleccionada"
+                                                        label="Descripción de la discapacidad visual"
+                                                        placeholder="Describa el tipo de discapacidad visual"
+                                                        maxlength="200"
+                                                        v-model="form.mujer_discapacidad_tipos.visual.descripcion"
+                                                        :error="form.errors['mujer_discapacidad_tipos.visual.descripcion']"
+                                                    />
+                                                </div>
+
+                                                <!-- Comunicación -->
+                                                <div class="border-l-4 border-pink-300 pl-2 py-2">
+                                                    <label class="inline-flex items-center mb-2">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            v-model="form.mujer_discapacidad_tipos.comunicacion.seleccionada" 
+                                                            class="form-checkbox h-5 w-5 text-pink-600"
+                                                        >
+                                                        <span class="ml-2 font-medium">Para comunicarse verbalmente</span>
+                                                    </label>
+                                                    <jaga_component_input 
+                                                        v-if="form.mujer_discapacidad_tipos.comunicacion.seleccionada"
+                                                        label="Descripción de la discapacidad de comunicación"
+                                                        placeholder="Describa el tipo de discapacidad de comunicación"
+                                                        maxlength="200"
+                                                        v-model="form.mujer_discapacidad_tipos.comunicacion.descripcion"
+                                                        :error="form.errors['mujer_discapacidad_tipos.comunicacion.descripcion']"
+                                                    />
+                                                </div>
+
+                                                <!-- Auditiva -->
+                                                <div class="border-l-4 border-pink-300 pl-2 py-2">
+                                                    <label class="inline-flex items-center mb-2">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            v-model="form.mujer_discapacidad_tipos.auditiva.seleccionada" 
+                                                            class="form-checkbox h-5 w-5 text-pink-600"
+                                                        >
+                                                        <span class="ml-2 font-medium">Auditiva</span>
+                                                    </label>
+                                                    <jaga_component_input 
+                                                        v-if="form.mujer_discapacidad_tipos.auditiva.seleccionada"
+                                                        label="Descripción de la discapacidad auditiva"
+                                                        placeholder="Describa el tipo de discapacidad auditiva"
+                                                        maxlength="200"
+                                                        v-model="form.mujer_discapacidad_tipos.auditiva.descripcion"
+                                                        :error="form.errors['mujer_discapacidad_tipos.auditiva.descripcion']"
+                                                    />
+                                                </div>
+
+                                                <!-- Intelectual -->
+                                                <div class="border-l-4 border-pink-300 pl-2 py-2">
+                                                    <label class="inline-flex items-center mb-2">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            v-model="form.mujer_discapacidad_tipos.intelectual.seleccionada" 
+                                                            class="form-checkbox h-5 w-5 text-pink-600"
+                                                        >
+                                                        <span class="ml-2 font-medium">Intelectual</span>
+                                                    </label>
+                                                    <jaga_component_input 
+                                                        v-if="form.mujer_discapacidad_tipos.intelectual.seleccionada"
+                                                        label="Descripción de la discapacidad intelectual"
+                                                        placeholder="Describa el tipo de discapacidad intelectual"
+                                                        maxlength="200"
+                                                        v-model="form.mujer_discapacidad_tipos.intelectual.descripcion"
+                                                        :error="form.errors['mujer_discapacidad_tipos.intelectual.descripcion']"
+                                                    />
+                                                </div>
+
+                                                <!-- Motriz -->
+                                                <div class="border-l-4 border-pink-300 pl-2 py-2">
+                                                    <label class="inline-flex items-center mb-2">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            v-model="form.mujer_discapacidad_tipos.motriz.seleccionada" 
+                                                            class="form-checkbox h-5 w-5 text-pink-600"
+                                                        >
+                                                        <span class="ml-2 font-medium">Motriz</span>
+                                                    </label>
+                                                    <jaga_component_input 
+                                                        v-if="form.mujer_discapacidad_tipos.motriz.seleccionada"
+                                                        label="Descripción de la discapacidad motriz"
+                                                        placeholder="Describa el tipo de discapacidad motriz"
+                                                        maxlength="200"
+                                                        v-model="form.mujer_discapacidad_tipos.motriz.descripcion"
+                                                        :error="form.errors['mujer_discapacidad_tipos.motriz.descripcion']"
+                                                    />
+                                                </div>
+
+                                                <!-- Otra -->
+                                                <div class="border-l-4 border-pink-300 pl-2 py-2">
+                                                    <label class="inline-flex items-center mb-2">
+                                                        <input 
+                                                            type="checkbox" 
+                                                            v-model="form.mujer_discapacidad_tipos.otra.seleccionada" 
+                                                            class="form-checkbox h-5 w-5 text-pink-600"
+                                                        >
+                                                        <span class="ml-2 font-medium">Otra</span>
+                                                    </label>
+                                                    <jaga_component_input 
+                                                        v-if="form.mujer_discapacidad_tipos.otra.seleccionada"
+                                                        label="Descripción de otra discapacidad"
+                                                        placeholder="Describa el tipo de discapacidad"
+                                                        maxlength="200"
+                                                        v-model="form.mujer_discapacidad_tipos.otra.descripcion"
+                                                        :error="form.errors['mujer_discapacidad_tipos.otra.descripcion']"
+                                                    />
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Afromexicana e Indígena -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                    <div class="bg-pink-100 p-2 rounded-lg shadow-md">
+                                        <label class="block text-sm font-medium text-pink-700 mb-1">¿Se reconoce como mujer afromexicana?</label>
+                                        <div class="flex items-center space-x-4">
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_afromexicana" :value="true" class="form-radio">
+                                                <span class="ml-2">Sí</span>
+                                            </label>
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_afromexicana" :value="false" class="form-radio">
+                                                <span class="ml-2">No</span>
+                                            </label>
+                                        </div>
+                                        <div v-if="form.errors.mujer_afromexicana" class="text-red-500 text-sm mt-1">
+                                            {{ form.errors.mujer_afromexicana }}
+                                        </div>
+                                    </div>
+
+                                    <div class="bg-pink-100 p-2 rounded-lg shadow-md">
+                                        <label class="block text-sm font-medium text-pink-700 mb-1">¿Se reconoce como mujer indígena?</label>
+                                        <div class="flex items-center space-x-4">
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_indigena" :value="true" class="form-radio">
+                                                <span class="ml-2">Sí</span>
+                                            </label>
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_indigena" :value="false" class="form-radio">
+                                                <span class="ml-2">No</span>
+                                            </label>
+                                        </div>
+                                        <div v-if="form.errors.mujer_indigena" class="text-red-500 text-sm mt-1">
+                                            {{ form.errors.mujer_indigena }}
+                                        </div>
+                                        <!-- Lengua Indígena e Intérprete -->
+                                        <div v-if="form.mujer_indigena" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                            <jaga_component_input 
+                                                label="¿Cuál lengua indígena u originaria habla?" 
+                                                class="col-span-2"
+                                                placeholder="Especifique la lengua indígena"
+                                                maxlength="100"
+                                                v-model="form.mujer_lengua_indigena"
+                                                :error="form.errors.mujer_lengua_indigena"
+                                            />
+
+                                            <div class="col-span-2">
+                                                <label class="block text-sm font-medium text-pink-700 mb-1">¿Requiere de intérprete?</label>
+                                                <div class="flex items-center space-x-4 mb-2">
+                                                    <label class="inline-flex items-center">
+                                                        <input type="radio" v-model="form.mujer_requiere_interprete" :value="true" class="form-radio">
+                                                        <span class="ml-2">Sí</span>
+                                                    </label>
+                                                    <label class="inline-flex items-center">
+                                                        <input type="radio" v-model="form.mujer_requiere_interprete" :value="false" class="form-radio">
+                                                        <span class="ml-2">No</span>
+                                                    </label>
+                                                </div>
+                                                
+                                                <jaga_component_input 
+                                                    v-if="form.mujer_requiere_interprete"
+                                                    label="¿De qué tipo?"
+                                                    placeholder="Especifique el tipo de intérprete"
+                                                    maxlength="100"
+                                                    v-model="form.mujer_tipo_interprete"
+                                                    :error="form.errors.mujer_tipo_interprete"
+                                                />
+                                            </div>
+                                        </div>
+
+                                    </div>
+
+                                    
+
+                                </div>
+
+
+
+                                <!-- LGBTTTIQ+ -->
+                                <div class="grid grid-cols-1  gap-4 mt-4">
+                                    <div class=" bg-pink-100 p-2 rounded-lg shadow-md">
+                                        <label class="block text-sm font-medium text-pink-700 mb-1">¿Pertenece a la población LGBTTTIQ+?</label>
+                                        <div class="flex items-center space-x-4 mb-1">
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_lgbtttiq" value="si" class="form-radio">
+                                                <span class="ml-2">Sí</span>
+                                            </label>
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_lgbtttiq" value="no" class="form-radio">
+                                                <span class="ml-2">No</span>
+                                            </label>
+                                            <label class="inline-flex items-center">
+                                                <input type="radio" v-model="form.mujer_lgbtttiq" value="prefiero-no-contestar" class="form-radio">
+                                                <span class="ml-2">Prefiero no contestar</span>
+                                            </label>
+                                        </div>
+                                        
+                                        <jaga_component_input 
+                                            v-if="form.mujer_lgbtttiq === 'si'"
+                                            label="Especifique"
+                                            class="col-span-3"
+                                            placeholder="Especifique"
+                                            maxlength="100"
+                                            v-model="form.mujer_lgbtttiq_especifique"
+                                            :error="form.errors.mujer_lgbtttiq_especifique"
+                                        />
+                                    </div>
+                                </div>
+                            </jaga_component_collapsible>
+                        <!-- </div> -->
+                        <!-- FIN SECCIÓN ESPECIAL PARA MUJERES -->
+                        <!-- red de mujeres electas  -->
 
                         <div class="border-b pb-4 bg-gray-50 p-4 rounded-lg">
                             <jaga_component_h3 text="Datos de contacto para Notificaciones" />

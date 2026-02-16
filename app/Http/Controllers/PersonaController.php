@@ -154,6 +154,37 @@ class PersonaController extends Controller
         return Inertia::render('Personas/Candidatos_form');
     }
 
+    public function documentos_rc()
+    {
+        //dd('Crear persona');
+        // Ejemplo de props desde el controlador
+            $candidato = [
+                'id' => 1,
+                'nombre' => 'Juan',
+                'primer_apellido' => 'Pérez',
+                'segundo_apellido' => 'García',
+                'curp' => 'PEGJ800101HDFRR01',
+                'ine_clave_elector' => 'PRGJNA80010101H100',
+                'tipo_cargo' => ['nombre' => 'Diputado Local'],
+                'municipio_distrito' => ['nombre' => 'Distrito 1'],
+                'actor_politico' => ['nombre' => 'PAN']
+            ];
+
+            $documentos = [
+                ['id' => 1, 'nombre' => 'Credencial INE (Frente y Reverso)', 'descripcion' => 'Anverso de la credencial de elector', 'obligatorio' => true],
+                ['id' => 2, 'nombre' => 'Comprobante de Domicilio', 'descripcion' => 'Comprobante de domicilio reciente', 'obligatorio' => false],
+                 ['id' => 3, 'nombre' => 'Formato de inscripción', 'descripcion' => 'Formato de inscripción del candidato', 'obligatorio' => true],
+                  ['id' => 4, 'nombre' => 'Carta pertenencia a Grupo Vulnerable', 'descripcion' => 'Carta de pertenencia a grupo vulnerable', 'obligatorio' => false],
+                   ['id' => 5, 'nombre' => 'Direccion de Notificaciones', 'descripcion' => 'Dirección de notificaciones del candidato', 'obligatorio' => true],
+                    ['id' => 6, 'nombre' => 'Declaración Patrimonial', 'descripcion' => 'Declaración patrimonial del candidato', 'obligatorio' => true],
+                // más documentos...
+            ];
+            return Inertia::render('Personas/Candidatos_documentos', [
+                'candidato' => $candidato,
+                'documentos' => $documentos
+            ]);
+    }
+
     /**
      * Store a newly created resource in storage.
      */

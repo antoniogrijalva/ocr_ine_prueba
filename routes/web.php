@@ -65,6 +65,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
             //JAGA febrero 2026:: solo para prototipo de registro de candidatos (captura)
             Route::get('/registro-candidatos/crear', [PersonaController::class, 'create_rc'])->name('personas.create_rc');
+            Route::get('/registro-candidatos/documentos', [PersonaController::class, 'documentos_rc'])->name('personas.documentos_rc');
     });
 
     Route::get('/personas', [PersonaController::class, 'index'])->name('personas.index');
